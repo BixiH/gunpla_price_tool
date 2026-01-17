@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}注册 - 高达价格查询工具{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">用户注册</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('register') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">用户名 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" name="username" required autofocus minlength="3">
+                        <small class="form-text text-muted">至少3个字符</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">邮箱（可选）</label>
+                        <input type="email" class="form-control" id="email" name="email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">密码 <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password" name="password" required minlength="6">
+                        <small class="form-text text-muted">至少6个字符</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password_confirm" class="form-label">确认密码 <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password_confirm" name="password_confirm" required minlength="6">
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">注册</button>
+                        <a href="{{ url_for('login') }}" class="btn btn-link">已有账号？立即登录</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}优惠券分析 - 高达价格查询工具{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">优惠券分析</h1>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h3>优惠券信息</h3>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <tr>
+                <th width="20%">平台</th>
+                <td><strong>{{ coupon.platform }}</strong></td>
+            </tr>
+            <tr>
+                <th>折扣类型</th>
+                <td>
+                    {% if coupon.discount_type == 'percentage' %}
+                        <span class="badge bg-primary">百分比折扣</span>
+                    {% else %}
+                        <span class="badge bg-secondary">固定金额折扣</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>折扣值</th>
+                <td>
+                    {% if coupon.discount_type == 'percentage' %}
+                        {{ "%.1f"|format(coupon.discount_value) }}%
+                    {% else %}
+                        ¥{{ "%.2f"|format(coupon.discount_value) }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% if coupon.max_discount %}
+            <tr>
+                <th>最高减免</th>
+                <td>¥{{ "%.2f"|format(coupon.max_discount) }}</td>
+            </tr>
+            {% endif %}
+            {% if coupon.min_purchase %}
+            <tr>
+                <th>最低购买</th>
+                <td>¥{{ "%.2f"|format(coupon.min_purchase) }}</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+<h2 class="mb-3">想要列表中的高达分析（按节省金额排序）</h2>
+
+{% if analyses %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>排名</th>
+                <th>高达名称</th>
+                <th>级别</th>
+                <th>原价</th>
+                <th>优惠后价格</th>
+                <th>节省金额</th>
+                <th>折扣率</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in analyses %}
+            <tr>
+                <td><strong>#{{ loop.index }}</strong></td>
+                <td>
+                    <strong><a href="{{ url_for('gunpla_detail', gunpla_id=item.gunpla.id) }}">{{ item.gunpla.name_cn }}</a></strong>
+                </td>
+                <td><span class="badge bg-info">{{ item.gunpla.grade }}</span></td>
+                <td><span class="price-value">¥{{ "%.2f"|format(item.original_price) }}</span></td>
+                <td><span class="text-success fw-bold">¥{{ "%.2f"|format(item.analysis.final_price) }}</span></td>
+                <td><span class="text-danger fw-bold">-¥{{ "%.2f"|format(item.analysis.savings) }}</span></td>
+                <td><span class="badge bg-warning text-dark">{{ "%.1f"|format(item.analysis.discount_rate) }}%</span></td>
+                <td>
+                    <a href="{{ url_for('gunpla_detail', gunpla_id=item.gunpla.id) }}" class="btn btn-sm btn-outline-primary">查看详情</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <h4>暂无分析数据</h4>
+    <p>想要列表中没有有价格信息的高达，或者优惠券不适用。</p>
+    <a href="{{ url_for('wishlist') }}" class="btn btn-primary">查看想要列表</a>
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{{ url_for('coupons') }}" class="btn btn-secondary">返回优惠券列表</a>
+</div>
+{% endblock %}
+

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}添加优惠券 - 高达价格查询工具{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">添加优惠券</h1>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('coupon_add') }}">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">平台 <span class="text-danger">*</span></label>
+                    <select class="form-select" name="platform" required>
+                        <option value="">请选择</option>
+                        {% for p in platforms %}
+                        <option value="{{ p }}">{{ p }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">折扣类型 <span class="text-danger">*</span></label>
+                    <select class="form-select" name="discount_type" required id="discount_type">
+                        <option value="">请选择</option>
+                        <option value="percentage">百分比折扣</option>
+                        <option value="fixed_amount">固定金额折扣</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">折扣值 <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" class="form-control" name="discount_value" required id="discount_value" placeholder="如：8 或 50">
+                        <span class="input-group-text" id="discount_unit">%</span>
+                    </div>
+                    <small class="form-text text-muted">百分比折扣请输入百分比数字（如8表示8折），固定金额请输入金额（如50表示减50元）</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">最高减免金额</label>
+                    <div class="input-group">
+                        <span class="input-group-text">¥</span>
+                        <input type="number" step="0.01" class="form-control" name="max_discount" placeholder="如：50">
+                    </div>
+                    <small class="form-text text-muted">例如：8折但最高减50元</small>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">最低购买金额</label>
+                    <div class="input-group">
+                        <span class="input-group-text">¥</span>
+                        <input type="number" step="0.01" class="form-control" name="min_purchase" placeholder="如：100">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">有效期开始</label>
+                    <input type="date" class="form-control" name="valid_from">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">有效期结束</label>
+                    <input type="date" class="form-control" name="valid_until">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">描述</label>
+                <textarea class="form-control" name="description" rows="3" placeholder="优惠券描述..."></textarea>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                <a href="{{ url_for('coupons') }}" class="btn btn-secondary">取消</a>
+                <button type="submit" class="btn btn-primary">保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('discount_type').addEventListener('change', function() {
+    const unit = document.getElementById('discount_unit');
+    const valueInput = document.getElementById('discount_value');
+    if (this.value === 'percentage') {
+        unit.textContent = '%';
+        valueInput.placeholder = '如：8 表示8折';
+    } else if (this.value === 'fixed_amount') {
+        unit.textContent = '元';
+        valueInput.placeholder = '如：50 表示减50元';
+    }
+});
+</script>
+{% endblock %}
+

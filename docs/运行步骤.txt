@@ -1,0 +1,21 @@
+Windows运行步骤：
+
+方法1（推荐）：
+1. 在PowerShell或命令提示符中输入：
+   cd gunpla_price_tool
+   
+2. 然后运行：
+   py app.py
+
+方法2（快速）：
+从 project2-1 目录直接运行：
+   py gunpla_price_tool/app.py
+
+方法3（最简单）：
+双击 运行应用.bat 文件
+
+注意事项：
+- 运行后，终端会显示 "Running on http://127.0.0.1:5000"
+- 保持终端窗口打开
+- 打开浏览器，访问 http://localhost:5000
+- 按 Ctrl+C 可以停止应用

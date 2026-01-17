@@ -1,0 +1,38 @@
+/* 自定义样式 */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.card {
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table {
+    background-color: white;
+}
+
+.price-label {
+    font-weight: bold;
+    color: #495057;
+}
+
+.price-value {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.suan-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    background-color: #ffc107;
+    color: #212529;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+

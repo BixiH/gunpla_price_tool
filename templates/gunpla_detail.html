@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}{{ gunpla.name_cn }} - 高达详情{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">首页</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('gunpla_list') }}">高达列表</a></li>
+                <li class="breadcrumb-item active">{{ gunpla.name_cn }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2>{{ gunpla.name_cn }}</h2>
+                {% if gunpla.name_jp %}<p class="mb-0 text-muted">{{ gunpla.name_jp }}</p>{% endif %}
+                {% if gunpla.name_en %}<p class="mb-0 text-muted">{{ gunpla.name_en }}</p>{% endif %}
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="30%">级别</th>
+                        <td><span class="badge bg-info">{{ gunpla.grade }}</span></td>
+                    </tr>
+                    {% if gunpla.ms_number %}
+                    <tr>
+                        <th>机体编号</th>
+                        <td>{{ gunpla.ms_number }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if gunpla.series %}
+                    <tr>
+                        <th>所属系列</th>
+                        <td>{{ gunpla.series }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if gunpla.subcategory %}
+                    <tr>
+                        <th>子分类</th>
+                        <td><span class="badge bg-secondary">{{ gunpla.subcategory }}</span></td>
+                    </tr>
+                    {% endif %}
+                </table>
+
+                <h5 class="mt-4 mb-3">价格信息</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>地区</th>
+                                <th>定价 (MSRP)</th>
+                                <th>市场价格</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th>日本</th>
+                                <td>
+                                    {% if gunpla.price_jp_msrp %}
+                                        ¥{{ "%.0f"|format(gunpla.price_jp_msrp) }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if gunpla.price_jp_market %}
+                                        ¥{{ "%.0f"|format(gunpla.price_jp_market) }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>美国</th>
+                                <td>
+                                    {% if gunpla.price_us_msrp %}
+                                        ${{ "%.2f"|format(gunpla.price_us_msrp) }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if gunpla.price_us_market %}
+                                        ${{ "%.2f"|format(gunpla.price_us_market) }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>中国</th>
+                                <td>
+                                    {% if gunpla.price_cn_msrp %}
+                                        ¥{{ "%.2f"|format(gunpla.price_cn_msrp) }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if gunpla.price_cn_market %}
+                                        <span class="price-value">¥{{ "%.2f"|format(gunpla.price_cn_market) }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {% set suan = gunpla.calculate_suan(jpy_rate) %}
+                {% if suan %}
+                <div class="alert alert-info mt-3">
+                    <h5>算数计算</h5>
+                    <p class="mb-0">
+                        <span class="suan-badge" style="font-size: 1.5em;">{{ "%.1f"|format(suan) }}算</span>
+                        <br>
+                        <small class="text-muted">
+                            基于日本定价 {{ "%.0f"|format(gunpla.price_jp_msrp) }}日元 和 中国市场价 {{ "%.2f"|format(gunpla.price_cn_market) }}元
+                            <br>
+                            汇率：1人民币 = {{ jpy_rate }}日元
+                        </small>
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>操作</h5>
+            </div>
+            <div class="card-body">
+                {% if not in_wishlist %}
+                <form method="POST" action="{{ url_for('wishlist_add') }}" class="mb-2">
+                    <input type="hidden" name="gunpla_id" value="{{ gunpla.id }}">
+                    <button type="submit" class="btn btn-warning w-100">添加到想要列表</button>
+                </form>
+                {% else %}
+                <button class="btn btn-secondary w-100" disabled>已在想要列表</button>
+                {% endif %}
+
+                {% if not in_collection %}
+                <form method="POST" action="{{ url_for('collection_add') }}">
+                    <input type="hidden" name="gunpla_id" value="{{ gunpla.id }}">
+                    <button type="submit" class="btn btn-success w-100">添加到已购买</button>
+                </form>
+                {% else %}
+                <button class="btn btn-secondary w-100" disabled>已在已购买列表</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

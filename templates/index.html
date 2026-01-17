@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 高达价格查询工具{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">高达价格查询工具</h1>
+        <p class="lead">管理您的高达收藏，查询价格，分析优惠券</p>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">高达列表</h5>
+                <p class="card-text">查看所有高达信息，包括多地区价格和"算"数计算</p>
+                <a href="{{ url_for('gunpla_list') }}" class="btn btn-primary">查看列表</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">想要列表</h5>
+                <p class="card-text">管理您想要购买的高达</p>
+                <a href="{{ url_for('wishlist') }}" class="btn btn-primary">查看列表</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">已购买</h5>
+                <p class="card-text">记录您已购买的高达</p>
+                <a href="{{ url_for('collection') }}" class="btn btn-primary">查看列表</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">添加高达</h5>
+                <p class="card-text">添加新的高达信息到数据库</p>
+                <a href="{{ url_for('gunpla_add') }}" class="btn btn-success">添加高达</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">优惠券管理</h5>
+                <p class="card-text">管理优惠券并分析最适合的高达</p>
+                <a href="{{ url_for('coupons') }}" class="btn btn-info">查看优惠券</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

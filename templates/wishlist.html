@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}想要列表 - 高达价格查询工具{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">想要列表</h1>
+
+{% if current_user.is_authenticated %}
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('export_list', list_type='wishlist') }}">导出CSV</a>
+    <form method="POST" action="{{ url_for('import_list', list_type='wishlist') }}" enctype="multipart/form-data" class="d-flex gap-2">
+        <input type="file" name="file" accept=".csv" class="form-control form-control-sm" required>
+        <button type="submit" class="btn btn-outline-success btn-sm">导入CSV</button>
+    </form>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">分享清单</h5>
+        {% if share_link %}
+        <div class="input-group mb-2">
+            <input type="text" class="form-control" value="{{ url_for('share_view', token=share_link.token, _external=True) }}" readonly>
+        </div>
+        <form method="POST" action="{{ url_for('share_create', list_type='wishlist') }}" style="display: inline;">
+            <button type="submit" class="btn btn-outline-primary btn-sm">刷新链接</button>
+        </form>
+        <form method="POST" action="{{ url_for('share_revoke', list_type='wishlist') }}" style="display: inline;">
+            <button type="submit" class="btn btn-outline-danger btn-sm">撤销链接</button>
+        </form>
+        {% else %}
+        <p class="text-muted mb-2">还没有分享链接。</p>
+        <form method="POST" action="{{ url_for('share_create', list_type='wishlist') }}">
+            <button type="submit" class="btn btn-outline-primary btn-sm">生成分享链接</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% if items %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>名称</th>
+                <th>级别</th>
+                <th>日本定价</th>
+                <th>中国市场价</th>
+                <th>算</th>
+                <th>添加时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>
+                    <strong><a href="{{ url_for('gunpla_detail', gunpla_id=item.gunpla.id) }}">{{ item.gunpla.name_cn }}</a></strong>
+                </td>
+                <td><span class="badge bg-info">{{ item.gunpla.grade }}</span></td>
+                <td>
+                    {% if item.gunpla.price_jp_msrp %}
+                        ¥{{ "%.0f"|format(item.gunpla.price_jp_msrp) }}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.gunpla.price_cn_market %}
+                        <span class="price-value">¥{{ "%.2f"|format(item.gunpla.price_cn_market) }}</span>
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% set suan = item.gunpla.calculate_suan() %}
+                    {% if suan %}
+                        <span class="suan-badge">{{ "%.1f"|format(suan) }}算</span>
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>{{ item.added_at.strftime('%Y-%m-%d') if item.added_at else '-' }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('wishlist_remove') }}" style="display: inline;">
+                        <input type="hidden" name="item_id" value="{{ item.id }}">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要移除吗？')">移除</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <h4>列表为空</h4>
+    <p>您的想要列表还是空的，<a href="{{ url_for('gunpla_list') }}">浏览高达列表</a>并添加到想要列表</p>
+</div>
+{% endif %}
+{% endblock %}
+
