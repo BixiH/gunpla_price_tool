@@ -55,6 +55,11 @@ SQLite is used by default (file: `gunpla.db`). Tables are created on first run.
 
 For production, use PostgreSQL (Render provides a free tier).
 
+## Default Data (CSV Seed)
+
+If the database is empty, the app will load `data/seed_gunpla.csv` on startup.
+Use `scripts/migrations/export_gunpla_to_csv.py` to regenerate the seed from local `gunpla.db`.
+
 ## Scrapers
 
 Scrapers live in `scripts/scrapers/` and target specific grades:

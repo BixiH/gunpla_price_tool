@@ -32,6 +32,43 @@ def load_user(user_id):
 # 在应用上下文中创建所有表
 with app.app_context():
     db.create_all()
+    # Seed initial Gunpla data from CSV if database is empty
+    if Gunpla.query.first() is None:
+        seed_path = os.path.join(os.path.dirname(__file__), "data", "seed_gunpla.csv")
+        if os.path.exists(seed_path):
+            try:
+                with open(seed_path, "r", encoding="utf-8") as f:
+                    reader = csv.DictReader(f)
+                    rows = []
+                    for row in reader:
+                        cleaned = {}
+                        for key, value in row.items():
+                            if value is None or value == "":
+                                cleaned[key] = None
+                                continue
+                            if key in {
+                                "id",
+                            }:
+                                cleaned[key] = int(value)
+                            elif key in {
+                                "price_jp_msrp",
+                                "price_jp_market",
+                                "price_us_msrp",
+                                "price_us_market",
+                                "price_cn_msrp",
+                                "price_cn_market",
+                            }:
+                                cleaned[key] = float(value)
+                            else:
+                                cleaned[key] = value
+                        rows.append(cleaned)
+                if rows:
+                    db.session.bulk_insert_mappings(Gunpla, rows)
+                    db.session.commit()
+                    print(f"Seeded Gunpla rows: {len(rows)}")
+            except Exception as e:
+                db.session.rollback()
+                print(f"Seed failed: {e}")
 
 
 @app.route('/')
