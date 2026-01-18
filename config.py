@@ -11,13 +11,13 @@ class Config:
     # Flask配置
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
-# 数据库配置
-database_url = os.environ.get('DATABASE_URL')
-if database_url and database_url.startswith('postgres://'):
-    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    # 数据库配置
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url and database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
 
-SQLALCHEMY_DATABASE_URI = database_url or \
-    'sqlite:///' + os.path.join(basedir, 'gunpla.db')
+    SQLALCHEMY_DATABASE_URI = database_url or \
+        'sqlite:///' + os.path.join(basedir, 'gunpla.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # 汇率配置（可根据需要调整）
