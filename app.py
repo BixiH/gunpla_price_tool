@@ -1,11 +1,12 @@
 """
 高达价格查询工具 - Flask主应用
 """
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, make_response
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, make_response, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from models import db, Gunpla, Wishlist, Collection, Coupon, PriceHistory, User, ShareLink
 from config import Config
 from datetime import datetime, date
+from urllib.parse import urljoin, urlparse
 import csv
 import io
 import secrets
@@ -23,6 +24,246 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message = '请先登录以访问此页面。'
 login_manager.login_message_category = 'info'
+
+SUPPORTED_LANGUAGES = {'zh', 'en'}
+TRANSLATIONS_EN = {
+    # Base template UI
+    '高达价格查询工具': 'Gunpla Price Tool',
+    '高达价格工具': 'Gunpla Price Tool',
+    '高达列表': 'Gunpla List',
+    '添加高达': 'Add Gunpla',
+    '想要列表': 'Wishlist',
+    '已购买': 'Collection',
+    '优惠券': 'Coupons',
+    '登出': 'Logout',
+    '登录': 'Login',
+    '注册': 'Register',
+    '语言': 'Language',
+    '中文': 'Chinese',
+    '英文': 'English',
+    '首页': 'Home',
+    '用户登录': 'User Login',
+    '用户注册': 'User Registration',
+    '用户名': 'Username',
+    '密码': 'Password',
+    '记住我': 'Remember me',
+    '还没有账号？立即注册': "Don't have an account? Register now",
+    '已有账号？立即登录': 'Already have an account? Log in now',
+    '邮箱（可选）': 'Email (optional)',
+    '确认密码': 'Confirm password',
+    '至少3个字符': 'At least 3 characters',
+    '至少6个字符': 'At least 6 characters',
+    '管理您的高达收藏，查询价格，分析优惠券': 'Manage your Gunpla collection, check prices, and analyze coupons.',
+    '查看所有高达信息，包括多地区价格和"算"数计算': 'View all Gunpla info, including multi-region prices and conversion metrics.',
+    '管理您想要购买的高达': 'Manage Gunpla you plan to buy.',
+    '记录您已购买的高达': 'Track Gunpla you have purchased.',
+    '查看列表': 'View List',
+    '添加新的高达信息到数据库': 'Add new Gunpla records to the database.',
+    '优惠券管理': 'Coupon Management',
+    '管理优惠券并分析最适合的高达': 'Manage coupons and analyze the best matches for your Gunpla.',
+    '查看优惠券': 'View Coupons',
+    '高达详情': 'Gunpla Details',
+    '详情': 'Details',
+    '搜索名称或编号...': 'Search by name or model number...',
+    '全部级别': 'All Grades',
+    '全部子分类': 'All Subcategories',
+    '搜索': 'Search',
+    '名称': 'Name',
+    '级别': 'Grade',
+    '子分类': 'Subcategory',
+    '日本定价': 'Japan MSRP',
+    '中国市场价': 'China Market Price',
+    '算': 'Rate',
+    '操作': 'Actions',
+    '暂无数据': 'No Data',
+    '还没有添加任何高达，': 'No Gunpla added yet, ',
+    '点击这里添加第一个': 'click here to add your first one',
+    '中文名称': 'Chinese Name',
+    '日文名称': 'Japanese Name',
+    '英文名称': 'English Name',
+    '请选择': 'Please Select',
+    '机体编号': 'Model Number',
+    '所属系列': 'Series',
+    '价格信息': 'Price Information',
+    '日本价格（日元）': 'Japan Price (JPY)',
+    '美国价格（美元）': 'US Price (USD)',
+    '中国价格（人民币）': 'China Price (CNY)',
+    '定价 (MSRP)': 'MSRP',
+    '市场价格': 'Market Price',
+    '日元': 'JPY',
+    '美元': 'USD',
+    '人民币': 'CNY',
+    '取消': 'Cancel',
+    '保存': 'Save',
+    '地区': 'Region',
+    '日本': 'Japan',
+    '美国': 'US',
+    '中国': 'China',
+    '算数计算': 'Rate Calculation',
+    '基于日本定价': 'Based on Japan MSRP',
+    '和': 'and',
+    '元': 'CNY',
+    '汇率：1人民币 =': 'Exchange rate: 1 CNY =',
+    '添加到想要列表': 'Add to Wishlist',
+    '已在想要列表': 'Already in Wishlist',
+    '添加到已购买': 'Add to Collection',
+    '已在已购买列表': 'Already in Collection',
+    '导出CSV': 'Export CSV',
+    '导入CSV': 'Import CSV',
+    '分享清单': 'Shared List',
+    '刷新链接': 'Refresh Link',
+    '撤销链接': 'Revoke Link',
+    '还没有分享链接。': 'No share link yet.',
+    '生成分享链接': 'Generate Share Link',
+    '添加时间': 'Added Time',
+    '确定要移除吗？': 'Are you sure you want to remove it?',
+    '移除': 'Remove',
+    '列表为空': 'List is Empty',
+    '您的想要列表还是空的，': 'Your wishlist is still empty, ',
+    '浏览高达列表': 'browse the Gunpla list',
+    '并添加到想要列表': ' and add items to wishlist',
+    '已购买列表': 'Collection List',
+    '购买价格': 'Purchase Price',
+    '购买平台': 'Purchase Platform',
+    '购买日期': 'Purchase Date',
+    '您还没有购买任何高达，': 'You have not purchased any Gunpla yet, ',
+    '分享者：': 'Shared by: ',
+    '类型：': 'Type: ',
+    '此分享清单暂时没有内容。': 'This shared list is empty for now.',
+    '添加优惠券': 'Add Coupon',
+    '平台': 'Platform',
+    '折扣类型': 'Discount Type',
+    '折扣值': 'Discount Value',
+    '最高减免': 'Max Discount',
+    '有效期': 'Validity',
+    '状态': 'Status',
+    '百分比': 'Percentage',
+    '固定金额': 'Fixed Amount',
+    '至': 'to',
+    '有效': 'Valid',
+    '无效': 'Invalid',
+    '分析': 'Analyze',
+    '暂无优惠券': 'No Coupons',
+    '还没有添加任何优惠券，': 'No coupons added yet, ',
+    '百分比折扣': 'Percentage Discount',
+    '固定金额折扣': 'Fixed Amount Discount',
+    '如：8 或 50': 'e.g. 8 or 50',
+    '百分比折扣请输入百分比数字（如8表示8折），固定金额请输入金额（如50表示减50元）': 'For percentage, enter a discount number (e.g. 8 means 20% off). For fixed amount, enter value (e.g. 50 means minus 50 CNY).',
+    '最高减免金额': 'Maximum Discount Amount',
+    '如：50': 'e.g. 50',
+    '例如：8折但最高减50元': 'Example: 20% off, capped at 50 CNY.',
+    '最低购买金额': 'Minimum Purchase Amount',
+    '如：100': 'e.g. 100',
+    '有效期开始': 'Valid From',
+    '有效期结束': 'Valid Until',
+    '描述': 'Description',
+    '优惠券描述...': 'Coupon description...',
+    '如：8 表示8折': 'e.g. 8 means 20% off',
+    '如：50 表示减50元': 'e.g. 50 means minus 50 CNY',
+    '优惠券分析': 'Coupon Analysis',
+    '优惠券信息': 'Coupon Information',
+    '最低购买': 'Minimum Purchase',
+    '想要列表中的高达分析（按节省金额排序）': 'Wishlist Gunpla Analysis (sorted by savings)',
+    '排名': 'Rank',
+    '高达名称': 'Gunpla Name',
+    '原价': 'Original Price',
+    '优惠后价格': 'Discounted Price',
+    '节省金额': 'Savings',
+    '折扣率': 'Discount Rate',
+    '查看详情': 'View Details',
+    '暂无分析数据': 'No Analysis Data',
+    '想要列表中没有有价格信息的高达，或者优惠券不适用。': 'No wishlist items with price data, or this coupon is not applicable.',
+    '查看想要列表': 'View Wishlist',
+    '返回优惠券列表': 'Back to Coupons',
+    # Shared feedback
+    '请先登录以访问此页面。': 'Please log in to access this page.',
+    '用户名至少需要3个字符': 'Username must be at least 3 characters.',
+    '密码至少需要6个字符': 'Password must be at least 6 characters.',
+    '两次输入的密码不一致': 'Passwords do not match.',
+    '用户名已存在': 'Username already exists.',
+    '邮箱已被注册': 'Email already registered.',
+    '注册成功！请登录': 'Registration successful! Please log in.',
+    '请输入用户名和密码': 'Please enter username and password.',
+    '用户名或密码错误': 'Invalid username or password.',
+    '已成功登出': 'Logged out successfully.',
+    '高达添加成功！': 'Gunpla added successfully!',
+    '已添加到想要列表！': 'Added to wishlist!',
+    '已经在想要列表中了！': 'Already in wishlist!',
+    '已从想要列表移除！': 'Removed from wishlist!',
+    '无权删除此项目': 'You do not have permission to delete this item.',
+    '已添加到已购买列表！': 'Added to collection!',
+    '已经在已购买列表中了！': 'Already in collection!',
+    '已从已购买列表移除！': 'Removed from collection!',
+    '无效的导出类型': 'Invalid export type.',
+    '无效的导入类型': 'Invalid import type.',
+    '请选择要导入的CSV文件': 'Please choose a CSV file to import.',
+    '无效的分享类型': 'Invalid share type.',
+    '分享链接已生成': 'Share link created.',
+    '分享链接已撤销': 'Share link revoked.',
+    '优惠券添加成功！': 'Coupon added successfully!',
+}
+
+
+def get_current_language():
+    lang = session.get('lang', 'zh')
+    return lang if lang in SUPPORTED_LANGUAGES else 'zh'
+
+
+def t(text):
+    """Translate user-facing text based on current language."""
+    if get_current_language() == 'zh':
+        return text
+
+    if text in TRANSLATIONS_EN:
+        return TRANSLATIONS_EN[text]
+
+    if text.startswith('欢迎回来，') and text.endswith('！'):
+        username = text[len('欢迎回来，'):-1]
+        return f'Welcome back, {username}!'
+
+    if text.startswith('注册失败：'):
+        detail = text.split('：', 1)[1]
+        return f'Registration failed: {detail}'
+
+    if text.startswith('添加失败：'):
+        detail = text.split('：', 1)[1]
+        return f'Add failed: {detail}'
+
+    if text.startswith('导入失败：'):
+        detail = text.split('：', 1)[1]
+        return f'Import failed: {detail}'
+
+    if text.startswith('导入完成：'):
+        detail = text.split('：', 1)[1]
+        return f'Import completed: {detail}'
+
+    return text
+
+
+def _is_safe_redirect_url(target):
+    if not target:
+        return False
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
+
+
+@app.context_processor
+def inject_i18n_helpers():
+    return {'t': t, 'current_lang': get_current_language()}
+
+
+@app.route('/set-language/<lang>')
+def set_language(lang):
+    if lang in SUPPORTED_LANGUAGES:
+        session['lang'] = lang
+    else:
+        session['lang'] = 'zh'
+
+    next_url = request.args.get('next') or request.referrer
+    if not _is_safe_redirect_url(next_url):
+        next_url = url_for('index')
+    return redirect(next_url)
 
 @login_manager.user_loader
 def load_user(user_id):

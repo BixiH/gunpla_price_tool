@@ -18,18 +18,45 @@ A web app for querying and managing Gunpla (Gundam model) prices with scraping, 
 ### 1) Install dependencies
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
+```
+
+On Windows (recommended), you can also use:
+
+```bash
+py -m pip install -r requirements.txt
 ```
 
 ### 2) Run the app
+
+Cross-platform:
 
 ```bash
 python app.py
 ```
 
+Windows launcher script:
+
+```bash
+.\运行应用.bat
+```
+
 ### 3) Open in browser
 
 Visit http://localhost:5000
+
+### Windows notes
+
+- The launcher script checks for `py` / `python` / `python3` automatically.
+- If dependencies are missing, it prints the install command and pauses so the window does not close immediately.
+- This project uses SQLite by default for local development. PostgreSQL driver (`psycopg2-binary`) is mainly needed for production/Render.
+
+## Update Notes (2026-05-12)
+
+- Added user-facing bilingual UI (Chinese/English) with a navbar language switcher (`语言/Language`).
+- Translated core pages and common flash messages, including home, auth, gunpla list/detail/add, wishlist/collection/share, and coupons.
+- Improved Windows startup experience by strengthening `运行应用.bat` checks and adding clearer dependency/startup error hints.
+- Updated setup docs for current Windows workflow and Python dependency installation.
 
 ## Project Structure
 
