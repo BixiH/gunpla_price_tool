@@ -2,6 +2,27 @@
 
 A web app for querying and managing Gunpla (Gundam model) prices with scraping, wishlist/collection, and sharing features.
 
+> 🔗 Live Demo: https://gunpla-price-tool-bjom.onrender.com
+> 👥 ~30 active users in Chinese Gunpla hobbyist community
+> 🌐 Bilingual UI (Chinese / English)
+
+## Why I Built This
+
+Gunpla prices fluctuate constantly across Japan, US, and China markets,
+and the coupon ecosystem is tricky. Most coupons only apply to special
+editions with premium pricing, requiring extra math to verify whether a
+deal is actually good. I built this first for my own collecting workflow,
+then shared it with a QQ group of fellow hobbyists.
+
+## Tech Stack
+
+- **Backend**: Python, Flask, SQLAlchemy
+- **Database**: SQLite (dev) / PostgreSQL (production)
+- **Auth**: Flask-Login
+- **Frontend**: HTML/CSS/JS, bilingual i18n
+- **Deployment**: Render
+- **Scraping**: requests, BeautifulSoup, IP rotation
+
 ## Features
 
 - Multi-region price display (JPY, USD, CNY)
@@ -12,6 +33,13 @@ A web app for querying and managing Gunpla (Gundam model) prices with scraping, 
 - Grade-specific scrapers with subcategory detection
 - CSV import/export and shareable list links
 - Optional user accounts (login/register)
+
+## Screenshots
+
+![Search Page](docs/screenshots/search.png)
+![Add Gunpla Page](docs/screenshots/costomize_add_gunpla.png)
+![Coupon Analysis Page](docs/screenshots/coupon.png)
+![Wishlist Page](docs/screenshots/wishlist.png)
 
 ## Quick Start
 
